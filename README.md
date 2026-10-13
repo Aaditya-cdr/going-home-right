@@ -5,6 +5,12 @@
 
 A healthcare safety-first hackathon prototype that turns **synthetic discharge summaries** into simple, accessible care plans for patients, elderly users, and caregivers, while maintaining strict evidence traceability and deterministic clinical validation for healthcare professionals and reviewers.
 
+## 🌐 Live Public Demo & Repository
+
+- **Live Demo Link:** [https://going-home-right.loca.lt](https://going-home-right.loca.lt)  
+  *(If prompted with a localtunnel security page, enter the Tunnel Password: `47.15.109.183` or click Click to Continue).*
+- **GitHub Repository:** [https://github.com/Aaditya-cdr/going-home-right](https://github.com/Aaditya-cdr/going-home-right)
+
 ---
 
 ## 🌟 Key Features & Two Distinct Experiences
