@@ -109,6 +109,10 @@ class DischargeAnalysisResponse(BaseModel):
     mode: Literal["deterministic-evidence-parser", "llm-assisted-parser"] = "deterministic-evidence-parser"
     document_title: str = "Discharge Summary (Synthetic Demo)"
     source_text: str = Field(default="", description="Complete extracted source text of the document")
+    ai_patient_overview: Optional[str] = Field(
+        default=None,
+        description="Plain-language patient overview synthesized by Gemini from documented instructions when configured"
+    )
     medications: list[MedicationItem] = Field(default_factory=list)
     follow_ups: list[FollowUpItem] = Field(default_factory=list)
     warning_signs: list[WarningSignItem] = Field(default_factory=list)

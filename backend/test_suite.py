@@ -189,10 +189,12 @@ def run_tests() -> bool:
     # Scenario 18: Missing API key / honest AI provider status
     r_health = client.post("/analyze", json={"text": "Patient summary"})
     assert r_health.status_code == 200
-    engine_mode = r_health.json()["mode"]
+    res_data = r_health.json()
+    engine_mode = res_data["mode"]
     if not ai_adapter.is_llm_available:
         assert engine_mode == "deterministic-evidence-parser"
         assert "Deterministic Rules Engine" in ai_adapter.provider_name
+        assert res_data.get("ai_patient_overview") is None
         print("[PASS] Scenario 18: Unconfigured API key honestly labeled as Deterministic Rules Engine (Zero-Inference).")
     else:
         assert engine_mode == "llm-assisted-parser"

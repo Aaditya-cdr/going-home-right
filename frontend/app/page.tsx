@@ -93,6 +93,7 @@ type AnalysisResult = {
   mode: string;
   document_title: string;
   source_text?: string;
+  ai_patient_overview?: string | null;
   medications: MedicationItem[];
   follow_ups: FollowUpItem[];
   warning_signs: WarningSignItem[];
@@ -370,6 +371,9 @@ export default function Home() {
       return overview;
     } else {
       let overview = "Welcome to Going Home Right. ";
+      if (result.ai_patient_overview) {
+        overview += `${result.ai_patient_overview} `;
+      }
       overview += `You have ${result.medications.length} documented medications. `;
       if (result.follow_ups.length > 0 && result.follow_ups[0].timing) {
         overview += `Your doctor appointment is ${result.follow_ups[0].timing}. `;
@@ -521,6 +525,37 @@ export default function Home() {
                   </span>
                 </div>
               </div>
+
+              {/* Optional AI Plain-Language Overview Card */}
+              {result?.ai_patient_overview && (
+                <div
+                  style={{
+                    background: "#ecfdf5",
+                    border: "1px solid #a7f3d0",
+                    borderRadius: "14px",
+                    padding: "16px 20px",
+                    marginBottom: "20px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ fontSize: "18px" }}>✨</span>
+                    <strong style={{ color: "#065f46", fontSize: "14px" }}>
+                      {lang === "hi" ? "आसान भाषा में सारांश (AI Plain-Language Overview)" : "AI Plain-Language Overview"}
+                    </strong>
+                  </div>
+                  <p style={{ margin: 0, color: "#047857", fontSize: "15px", lineHeight: 1.5 }}>
+                    {result.ai_patient_overview}
+                  </p>
+                  <span style={{ fontSize: "11px", color: "#065f46", opacity: 0.85 }}>
+                    {lang === "hi"
+                      ? "ⓘ यह सारांश केवल समझने की सरलता के लिए है। मुख्य दवाइयों की जानकारी नीचे दिए गए कागज़ के अनुसार है।"
+                      : "ⓘ Synthesized by Gemini for plain-language readability. Deterministic rules remain the primary source of truth for all clinical orders."}
+                  </span>
+                </div>
+              )}
 
               {/* 4 Prominent Action Tiles */}
               <div className="patient-tiles-grid">
@@ -1302,14 +1337,40 @@ export default function Home() {
                   </span>
                   <strong style={{ color: result.mode === "llm-assisted-parser" ? "#0369a1" : "#1e293b" }}>
                     {result.mode === "llm-assisted-parser"
-                      ? "🤖 AI-Assisted (Google Gemini API + Deterministic Safety Audit)"
-                      : "🛡️ Deterministic Rules Engine (Zero-Inference Grounded Mode)"}
+                      ? "🤖 Hybrid Architecture (Deterministic Ground Truth + Gemini Plain-Language Synthesis)"
+                      : "🛡️ Deterministic Rules Engine (Primary Source of Truth — Zero-Inference Grounded Mode)"}
                   </strong>
                 </div>
                 <span style={{ color: "#64748b", fontStyle: "italic", fontSize: "12px" }}>
                   {result.document_title}
                 </span>
               </div>
+
+              {/* AI Plain-Language Overview Card (if synthesized by Gemini) */}
+              {result.ai_patient_overview && (
+                <div
+                  style={{
+                    background: "#ecfdf5",
+                    border: "1px solid #a7f3d0",
+                    borderRadius: "8px",
+                    padding: "12px 16px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                    <span>✨</span>
+                    <strong style={{ color: "#065f46", fontSize: "13px" }}>
+                      AI Plain-Language Overview (Synthesized by Google Gemini)
+                    </strong>
+                  </div>
+                  <p style={{ margin: "0 0 4px 0", color: "#047857", fontSize: "13.5px", lineHeight: 1.45 }}>
+                    {result.ai_patient_overview}
+                  </p>
+                  <span style={{ fontSize: "11px", color: "#065f46", opacity: 0.85 }}>
+                    ⓘ Synthesized from documented instructions for plain-language readability. Deterministic rules remain the primary source of truth for all clinical dosages and warnings.
+                  </span>
+                </div>
+              )}
 
               {/* Counts */}
               <div className="counts">

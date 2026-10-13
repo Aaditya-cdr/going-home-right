@@ -5,11 +5,11 @@
 
 A healthcare safety-first hackathon prototype that turns **synthetic discharge summaries** into simple, accessible care plans for patients, elderly users, and caregivers, while maintaining strict evidence traceability and deterministic clinical validation for healthcare professionals and reviewers.
 
-## 🌐 Live Public Demo & Repository
+## 🌐 Repository & Deployment Architecture
 
-- **Live Demo Link:** [https://going-home-right.loca.lt](https://going-home-right.loca.lt)  
-  *(If prompted with a localtunnel security page, enter the Tunnel Password: `47.15.109.183` or click Click to Continue).*
 - **GitHub Repository:** [https://github.com/Aaditya-cdr/going-home-right](https://github.com/Aaditya-cdr/going-home-right)
+- **Deployment Strategy:** Designed for standalone local execution (2-minute setup below) or containerized deployment (Next.js on Vercel, FastAPI backend on Cloud Run / Render / Railway).
+- **Secret Hygiene & Safety:** All API credentials (`GEMINI_API_KEY`) reside exclusively in server-side environment variables. No credentials, development passwords, or host IPs are committed to source control.
 
 ---
 
