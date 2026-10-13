@@ -94,6 +94,9 @@ async def upload_endpoint(file: UploadFile = File(...)):
     filename = (file.filename or "").lower()
     content = await file.read(5_000_001)
 
+    if len(content) == 0:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty (0 bytes).")
+
     if len(content) > 5_000_000:
         raise HTTPException(status_code=413, detail="File too large (5 MB maximum).")
 
@@ -107,7 +110,12 @@ async def upload_endpoint(file: UploadFile = File(...)):
     else:
         raise HTTPException(status_code=415, detail="Unsupported format. Please upload a .txt or text-based .pdf.")
 
-    return ai_adapter.analyze(text)
+    if not text.strip():
+        raise HTTPException(status_code=422, detail="Uploaded document contains no readable text.")
+
+    res = ai_adapter.analyze(text)
+    res.source_text = text
+    return res
 
 
 @app.post("/audit-output", response_model=list[SafetyFlag])

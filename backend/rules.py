@@ -733,6 +733,7 @@ def analyze_discharge_text(text: str, test_case_id: str | None = None) -> Discha
     return DischargeAnalysisResponse(
         mode="deterministic-evidence-parser",
         document_title="Synthetic Discharge Summary",
+        source_text=text,
         medications=all_medications,
         follow_ups=all_followups,
         warning_signs=all_warnings,

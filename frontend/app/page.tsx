@@ -92,6 +92,7 @@ type ScheduleGroup = {
 type AnalysisResult = {
   mode: string;
   document_title: string;
+  source_text?: string;
   medications: MedicationItem[];
   follow_ups: FollowUpItem[];
   warning_signs: WarningSignItem[];
@@ -132,6 +133,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [testCases, setTestCases] = useState<TestCase[]>([]);
   const [selectedCaseId, setSelectedCaseId] = useState<string>("");
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
   // Technical view filters
   const [activeSlot, setActiveSlot] = useState<string>("all");
@@ -174,6 +176,7 @@ export default function Home() {
 
   async function selectTestCase(tc: TestCase) {
     setSelectedCaseId(tc.id);
+    setUploadedFileName(null);
     setText(tc.source_text);
     setAnswers({});
     setExpandedSources({});
@@ -208,6 +211,13 @@ export default function Home() {
   async function onFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.size === 0) {
+      setError(lang === "hi" ? "चयनित फ़ाइल खाली है (0 बाइट्स)।" : "Selected file is empty (0 bytes).");
+      e.target.value = "";
+      return;
+    }
+
     setBusy(true);
     setError("");
     setAuditMessage("");
@@ -217,8 +227,10 @@ export default function Home() {
       const r = await fetch(`${API}/upload`, { method: "POST", body });
       const data = await r.json();
       if (!r.ok) throw new Error(data.detail || "Upload failed");
+      const extractedText = data.source_text || "";
       setResult(data);
-      setText(`[Uploaded File]: ${file.name}`);
+      setText(extractedText);
+      setUploadedFileName(file.name);
       setAnswers({});
       setSelectedCaseId("");
       setPatientSection("home");
@@ -302,7 +314,11 @@ export default function Home() {
   }
 
   async function runHallucinationSafetyTest() {
-    if (!text.trim()) return;
+    const sourceToAudit = result?.source_text || text;
+    if (!sourceToAudit.trim()) {
+      setError(lang === "hi" ? "ऑडिट करने के लिए कोई दस्तावेज़ उपलब्ध नहीं है।" : "No document text available to audit.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {
@@ -318,7 +334,7 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          source_text: text,
+          source_text: sourceToAudit,
           candidate_medications: fakeCandidate,
         }),
       });
@@ -1209,18 +1225,43 @@ export default function Home() {
               </button>
             </div>
 
+            {uploadedFileName && (
+              <div className="file-note" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span>
+                  📄 <strong>{uploadedFileName}</strong> — Genuine document text extracted & preserved for evidence verification.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUploadedFileName(null);
+                    setText("");
+                    setResult(null);
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "var(--accent, #1d4ed8)",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
+                >
+                  Clear File
+                </button>
+              </div>
+            )}
+
             <textarea
-              value={text.startsWith("[Uploaded File]:") ? "" : text}
+              value={text}
               onChange={(e) => {
                 setText(e.target.value);
                 setResult(null);
                 setSelectedCaseId("");
+                setUploadedFileName(null);
               }}
-              placeholder="Paste discharge instructions here…\n\nTip: Uses recognized headings: MEDICATIONS, FOLLOW-UP, WARNING SIGNS, CARE INSTRUCTIONS."
+              placeholder={`Paste discharge instructions here…\n\nTip: Uses recognized headings: MEDICATIONS, FOLLOW-UP, WARNING SIGNS, CARE INSTRUCTIONS.`}
               aria-label="Discharge instructions"
             />
-
-            {text.startsWith("[Uploaded File]:") && <div className="file-note">✓ {text}</div>}
             {auditMessage && <div className="audit-alert">{auditMessage}</div>}
 
             <div className="submit-row">
@@ -1228,7 +1269,7 @@ export default function Home() {
               <button
                 className="primary"
                 onClick={() => analyzeTextDirectly(text, selectedCaseId)}
-                disabled={busy || !text.trim() || text.startsWith("[Uploaded File]:")}
+                disabled={busy || !text.trim()}
               >
                 {busy ? "Auditing & Extracting…" : "Organize & Audit Instructions"}
                 <span>→</span>
@@ -1241,6 +1282,35 @@ export default function Home() {
           {/* Results Display */}
           {result && (
             <div className="results">
+              {/* Engine Transparency Banner */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "10px 16px",
+                  borderRadius: "8px",
+                  background: result.mode === "llm-assisted-parser" ? "#e0f2fe" : "#f1f5f9",
+                  marginBottom: "16px",
+                  border: "1px solid #cbd5e1",
+                  fontSize: "13px",
+                }}
+              >
+                <div>
+                  <span style={{ fontSize: "11px", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", color: "#64748b" }}>
+                    Engine:{" "}
+                  </span>
+                  <strong style={{ color: result.mode === "llm-assisted-parser" ? "#0369a1" : "#1e293b" }}>
+                    {result.mode === "llm-assisted-parser"
+                      ? "🤖 AI-Assisted (Google Gemini API + Deterministic Safety Audit)"
+                      : "🛡️ Deterministic Rules Engine (Zero-Inference Grounded Mode)"}
+                  </strong>
+                </div>
+                <span style={{ color: "#64748b", fontStyle: "italic", fontSize: "12px" }}>
+                  {result.document_title}
+                </span>
+              </div>
+
               {/* Counts */}
               <div className="counts">
                 <div>

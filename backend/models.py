@@ -108,6 +108,7 @@ class ScheduleGroup(BaseModel):
 class DischargeAnalysisResponse(BaseModel):
     mode: Literal["deterministic-evidence-parser", "llm-assisted-parser"] = "deterministic-evidence-parser"
     document_title: str = "Discharge Summary (Synthetic Demo)"
+    source_text: str = Field(default="", description="Complete extracted source text of the document")
     medications: list[MedicationItem] = Field(default_factory=list)
     follow_ups: list[FollowUpItem] = Field(default_factory=list)
     warning_signs: list[WarningSignItem] = Field(default_factory=list)
