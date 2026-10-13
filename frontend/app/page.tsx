@@ -113,7 +113,7 @@ type TestCase = {
   simulated_hallucination?: any;
 };
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API = process.env.NEXT_PUBLIC_API_URL || "";
 
 type PatientSection = "home" | "medicines" | "followup" | "homecare" | "help" | "teachback";
 
